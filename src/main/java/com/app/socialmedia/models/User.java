@@ -17,6 +17,7 @@ public class User implements UserDetails {
     private String name;
     private String email;
     private String password;
+    private byte[] profilePicture;
     private Date registrationDate;
     private List<String> followers;
     private List<String> following;
