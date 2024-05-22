@@ -43,6 +43,17 @@ public class TweetService {
         return tweetRepository.findByUserId(userId);
     }
 
+    public boolean updateLikeCount(String tweetId, int count) {
+        Optional<Tweet> tweetOptional = tweetRepository.findById(tweetId);
+        if (tweetOptional.isPresent()) {
+            Tweet tweet = tweetOptional.get();
+            tweet.setLikeCount(tweet.getLikeCount() + count);
+            tweetRepository.save(tweet);
+            return true;
+        }
+        return false;
+    }
+
     public boolean toggleSoftDelete(String tweetId) {
         Optional<Tweet> tweetOptional = tweetRepository.findById(tweetId);
         if (tweetOptional.isPresent()) {
