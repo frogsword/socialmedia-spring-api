@@ -7,13 +7,12 @@ import com.app.socialmedia.services.TweetService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/tweet")
+@RequestMapping("api/tweets")
 public class TweetController {
     private final TweetService tweetService;
 
@@ -29,5 +28,23 @@ public class TweetController {
         Tweet createdTweet = tweetService.createTweet(tweetDto, currentUser);
 
         return ResponseEntity.ok(createdTweet);
+    }
+
+    @GetMapping("/user/{userId}/all")
+    public ResponseEntity<List<Tweet>> getAllTweets(@PathVariable String userId) {
+        List<Tweet> tweets = tweetService.getUserTweets(userId);
+        return ResponseEntity.ok(tweets);
+    }
+
+    //client will take returned tweetId and modify isDeleted field
+    @DeleteMapping("/{tweetId}/delete")
+    public ResponseEntity<String> deleteTweet(@PathVariable String tweetId) {
+        boolean successful = tweetService.toggleSoftDelete(tweetId);
+        if (successful) {
+            return ResponseEntity.ok(tweetId);
+        }
+        else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

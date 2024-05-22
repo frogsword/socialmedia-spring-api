@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TweetService {
@@ -35,5 +37,20 @@ public class TweetService {
         tweet.setParentIds(new ArrayList<>());
 
         return tweetRepository.save(tweet);
+    }
+
+    public List<Tweet> getUserTweets(String userId) {
+        return tweetRepository.findByUserId(userId);
+    }
+
+    public boolean toggleSoftDelete(String tweetId) {
+        Optional<Tweet> tweetOptional = tweetRepository.findById(tweetId);
+        if (tweetOptional.isPresent()) {
+            Tweet tweet = tweetOptional.get();
+            tweet.setDeleted(!tweet.isDeleted());
+            tweetRepository.save(tweet);
+            return true;
+        }
+        return false;
     }
 }

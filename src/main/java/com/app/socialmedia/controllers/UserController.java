@@ -44,11 +44,6 @@ public class UserController {
 
         String jwt = jwtService.generateToken(authenticatedUser);
 
-        Cookie cookie = new Cookie("Authorization", jwt);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        response.addCookie(cookie);
-
         return ResponseEntity.ok(jwt);
     }
 
