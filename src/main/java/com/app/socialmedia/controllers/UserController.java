@@ -7,12 +7,17 @@ import com.app.socialmedia.models.User;
 import com.app.socialmedia.services.AuthenticationService;
 import com.app.socialmedia.services.JwtService;
 import com.app.socialmedia.services.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -35,10 +40,16 @@ public class UserController {
     }
 
     @PostMapping("auth/login")
-    public ResponseEntity<String> authenticate(@RequestBody LoginDto loginUserDto) {
+    public ResponseEntity<String> authenticate(@RequestBody LoginDto loginUserDto, HttpServletResponse response) {
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
 
         String jwt = jwtService.generateToken(authenticatedUser);
+
+        Cookie jwtCookie = new Cookie("JSON_WEB_TOKEN", jwt);
+        jwtCookie.setPath("/");
+        jwtCookie.setHttpOnly(true);
+        //jwtCookie.setSecure(true);
+        response.addCookie(jwtCookie);
 
         return ResponseEntity.ok(jwt);
     }
@@ -52,11 +63,31 @@ public class UserController {
         return ResponseEntity.ok(currentUser);
     }
 
-    @PutMapping("users/{userId}/username/update")
-    public ResponseEntity<User> updateUsername(@PathVariable String userId, @RequestBody UpdateUsernameDto updateUsernameDto) {
-        User user = userService.updateUsername(userId, updateUsernameDto.getName());
+    @PatchMapping("users/username/update")
+    public ResponseEntity<User> updateUsername(@RequestBody UpdateUsernameDto updateUsernameDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        User user = userService.updateUsername(currentUser.getId(), updateUsernameDto.getName());
         return ResponseEntity.ok(user);
     }
+
+    @PutMapping("users/{followingId}/follow")
+    public ResponseEntity<Boolean> toggleFollow(@PathVariable String followingId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        boolean successful;
+        if (!currentUser.getId().equals(followingId)) {
+            successful = userService.toggleFollow(currentUser.getId(), followingId);
+        }
+        else {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(successful);
+    }
+
 
     @GetMapping("users")
     public ResponseEntity<List<User>> allUsers() {

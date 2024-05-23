@@ -3,6 +3,7 @@ package com.app.socialmedia.services;
 import com.app.socialmedia.models.Tweet;
 import com.app.socialmedia.models.User;
 import com.app.socialmedia.repositories.UserRepository;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,32 +21,6 @@ public class UserService {
         return new ArrayList<>(userRepository.findAll());
     }
 
-    public boolean likeTweet(String tweetId, String userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            List<String> likedTweets = user.getLikedTweets();
-            likedTweets.add(tweetId);
-            user.setLikedTweets(likedTweets);
-            userRepository.save(user);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean unlikeTweet(String tweetId, String userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            List<String> likedTweets = user.getLikedTweets();
-            likedTweets.remove(tweetId);
-            user.setLikedTweets(likedTweets);
-            userRepository.save(user);
-            return true;
-        }
-        return false;
-    }
-
     public boolean updateLikedTweets(String tweetId, String userId, boolean toRemove) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isPresent()) {
@@ -61,6 +36,40 @@ public class UserService {
 
             user.setLikedTweets(likedTweets);
             userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean toggleFollow(String userId, String followingId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<User> followedUserOptional = userRepository.findById(followingId);
+
+        if (userOptional.isPresent() && followedUserOptional.isPresent()) {
+
+            User user = userOptional.get();
+            User followedUser = followedUserOptional.get();
+            List<String> following = user.getFollowing();
+            List<String> followers = followedUser.getFollowers();
+
+            if (following.contains(followingId) && followers.contains(userId)) {
+                following.remove(followingId);
+                followers.remove(userId);
+            }
+            else if (!following.contains(followingId) && !followers.contains(userId)) {
+                following.add(followingId);
+                followers.add(userId);
+            }
+            else {
+                return false;
+            }
+
+            user.setFollowing(following);
+            followedUser.setFollowers(followers);
+
+            userRepository.save(user);
+            userRepository.save(followedUser);
+
             return true;
         }
         return false;
