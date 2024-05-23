@@ -3,6 +3,7 @@ package com.app.socialmedia.config;
 import com.app.socialmedia.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
@@ -17,6 +18,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Optional;
 
 
 @Component
@@ -42,15 +45,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        //array null error for cookies on login route without this
+        String path = request.getRequestURI();
+        if ("/api/auth/login".equals(path) || "/api/auth/signup".equals(path)) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        String jwt = Arrays.stream(request.getCookies())
+                .filter(c -> "JSON_WEB_TOKEN".equals(c.getName()))
+                .map(Cookie::getValue)
+                .findAny()
+                .orElse("");
+
         try {
-            final String jwt = authHeader.substring(7);
             final String userEmail = jwtService.extractUsername(jwt);
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
