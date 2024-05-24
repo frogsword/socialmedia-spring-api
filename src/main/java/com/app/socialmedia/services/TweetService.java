@@ -4,8 +4,10 @@ import com.app.socialmedia.dtos.tweet.TweetDto;
 import com.app.socialmedia.models.Tweet;
 import com.app.socialmedia.models.User;
 import com.app.socialmedia.repositories.TweetRepository;
+import com.app.socialmedia.utils.ImageUtil;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -19,11 +21,27 @@ public class TweetService {
         this.tweetRepository = tweetRepository;
     }
 
-    public Tweet createTweet(TweetDto tweetDto, User user) {
+    public List<Tweet> getUserTweets(String userId) {
+        List<Tweet> tweetsTemp = tweetRepository.findByUserId(userId);
+        List<Tweet> tweets = new ArrayList<>(tweetsTemp);
+
+        for (Tweet tweet : tweets) {
+            if (tweet.getImage().length != 0) {
+                tweet.setImage(ImageUtil.decompressImage(tweet.getImage()));
+            }
+        }
+
+        return tweets;
+    }
+
+    public Tweet createTweet(TweetDto tweetDto, User user) throws IOException {
         Tweet tweet = new Tweet();
 
+        byte[] imageRaw = tweetDto.getImage().getBytes();
+        byte[] image = ImageUtil.compressImage(imageRaw);
+
         tweet.setBody(tweetDto.getBody());
-        tweet.setImage(tweetDto.getImage());
+        tweet.setImage(image);
 
         tweet.setUserName(user.getName());
         tweet.setUserId(user.getId());
@@ -39,7 +57,7 @@ public class TweetService {
         return tweetRepository.save(tweet);
     }
 
-    public Tweet replyToTweet(TweetDto tweetDto, User user, String parentId) {
+    public Tweet replyToTweet(TweetDto tweetDto, User user, String parentId) throws IOException {
         Tweet parentTweet = tweetRepository.findById(parentId).orElse(null);
 
         if (parentTweet == null) {
@@ -50,11 +68,13 @@ public class TweetService {
             List<String> parentIds = new ArrayList<>(parentsParentIds);
             parentIds.add(parentId);
 
-
             Tweet tweet = new Tweet();
 
+            byte[] imageRaw = tweetDto.getImage().getBytes();
+            byte[] image = ImageUtil.compressImage(imageRaw);
+
             tweet.setBody(tweetDto.getBody());
-            tweet.setImage(tweetDto.getImage());
+            tweet.setImage(image);
 
             tweet.setUserName(user.getName());
             tweet.setUserId(user.getId());
@@ -72,10 +92,6 @@ public class TweetService {
 
             return tweetRepository.save(tweet);
         }
-    }
-
-    public List<Tweet> getUserTweets(String userId) {
-        return tweetRepository.findByUserId(userId);
     }
 
     public boolean updateLikeCount(String tweetId, int count) {

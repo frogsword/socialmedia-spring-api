@@ -3,15 +3,16 @@ package com.app.socialmedia.controllers;
 import com.app.socialmedia.dtos.tweet.TweetDto;
 import com.app.socialmedia.models.Tweet;
 import com.app.socialmedia.models.User;
-import com.app.socialmedia.repositories.UserRepository;
 import com.app.socialmedia.services.TweetService;
 import com.app.socialmedia.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("api/tweets")
@@ -25,9 +26,17 @@ public class TweetController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Tweet> createTweet(@RequestBody TweetDto tweetDto) {
+    public ResponseEntity<Tweet> createTweet(@RequestParam MultipartFile image, @RequestParam String body) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
+
+        if (!Objects.equals(image.getContentType(), "image/jpeg")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        TweetDto tweetDto = new TweetDto();
+        tweetDto.setBody(body);
+        tweetDto.setImage(image);
 
         Tweet createdTweet = tweetService.createTweet(tweetDto, currentUser);
 
@@ -35,9 +44,17 @@ public class TweetController {
     }
 
     @PostMapping("/{parentId}/reply")
-    public ResponseEntity<Tweet> replyToTweet(@PathVariable String parentId, @RequestBody TweetDto tweetDto) {
+    public ResponseEntity<Tweet> replyToTweet(@PathVariable String parentId, @RequestParam MultipartFile image, @RequestParam String body) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
+
+        if (!Objects.equals(image.getContentType(), "image/jpeg")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        TweetDto tweetDto = new TweetDto();
+        tweetDto.setBody(body);
+        tweetDto.setImage(image);
 
         Tweet reply = tweetService.replyToTweet(tweetDto, currentUser, parentId);
 
