@@ -1,10 +1,12 @@
 package com.app.socialmedia.services;
 
-import com.app.socialmedia.models.Tweet;
 import com.app.socialmedia.models.User;
 import com.app.socialmedia.repositories.UserRepository;
-import org.springframework.security.core.parameters.P;
+import com.app.socialmedia.utils.ImageUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +21,19 @@ public class UserService {
 
     public List<User> allUsers() {
         return new ArrayList<>(userRepository.findAll());
+    }
+
+    public User updatePfp(String userId, MultipartFile image) throws IOException {
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user != null) {
+            byte[] imageBytes = image.getBytes();
+
+            user.setProfilePicture(imageBytes);
+
+            return userRepository.save(user);
+        }
+        return null;
     }
 
     public boolean updateLikedTweets(String tweetId, String userId, boolean toRemove) {

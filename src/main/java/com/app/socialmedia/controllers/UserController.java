@@ -8,16 +8,15 @@ import com.app.socialmedia.services.AuthenticationService;
 import com.app.socialmedia.services.JwtService;
 import com.app.socialmedia.services.UserService;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
@@ -70,6 +69,24 @@ public class UserController {
 
         User user = userService.updateUsername(currentUser.getId(), updateUsernameDto.getName());
         return ResponseEntity.ok(user);
+    }
+
+    @PatchMapping("users/pfp/update")
+    public ResponseEntity<User> updatePfp(@RequestParam MultipartFile image) throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        if (!Objects.equals(image.getContentType(), "image/jpeg") || image.getSize() > 100000) {
+            return ResponseEntity.badRequest().build();
+        }
+        User updatedUser = userService.updatePfp(currentUser.getId(), image);
+
+        if (updatedUser == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        else {
+            return ResponseEntity.ok(updatedUser);
+        }
     }
 
     @PutMapping("users/{followingId}/follow")
