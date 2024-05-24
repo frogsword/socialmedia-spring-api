@@ -34,6 +34,16 @@ public class TweetController {
         return ResponseEntity.ok(createdTweet);
     }
 
+    @PostMapping("/{parentId}/reply")
+    public ResponseEntity<Tweet> replyToTweet(@PathVariable String parentId, @RequestBody TweetDto tweetDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        Tweet reply = tweetService.replyToTweet(tweetDto, currentUser, parentId);
+
+        return ResponseEntity.ok(reply);
+    }
+
     @PutMapping("/{tweetId}/like")
     public ResponseEntity<String> likeTweet(@PathVariable String tweetId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

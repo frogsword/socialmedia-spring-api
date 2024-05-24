@@ -39,6 +39,41 @@ public class TweetService {
         return tweetRepository.save(tweet);
     }
 
+    public Tweet replyToTweet(TweetDto tweetDto, User user, String parentId) {
+        Tweet parentTweet = tweetRepository.findById(parentId).orElse(null);
+
+        if (parentTweet == null) {
+            return null;
+        }
+        else {
+            List<String> parentsParentIds = parentTweet.getParentIds();
+            List<String> parentIds = new ArrayList<>(parentsParentIds);
+            parentIds.add(parentId);
+
+
+            Tweet tweet = new Tweet();
+
+            tweet.setBody(tweetDto.getBody());
+            tweet.setImage(tweetDto.getImage());
+
+            tweet.setUserName(user.getName());
+            tweet.setUserId(user.getId());
+            tweet.setUserPfp(user.getProfilePicture());
+
+            tweet.setCreatedAt(new Date());
+
+            tweet.setLikeCount(0);
+            tweet.setReplyCount(0);
+            tweet.setDeleted(false);
+            tweet.setParentIds(parentIds);
+
+            parentTweet.setReplyCount(parentTweet.getReplyCount() + 1);
+            tweetRepository.save(parentTweet);
+
+            return tweetRepository.save(tweet);
+        }
+    }
+
     public List<Tweet> getUserTweets(String userId) {
         return tweetRepository.findByUserId(userId);
     }
