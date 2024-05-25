@@ -34,6 +34,36 @@ public class TweetService {
         return tweets;
     }
 
+    public List<Tweet> getTweetThread(String tweetId) {
+        Tweet mainTweet = tweetRepository.findById(tweetId).orElse(null);
+
+        if (mainTweet == null) {
+            return null;
+        }
+
+        List<Tweet> tweets = new ArrayList<>();
+
+        for (String parentId : mainTweet.getParentIds()) {
+            Tweet parentTweet = tweetRepository.findById(parentId).orElse(null);
+            tweets.add(parentTweet);
+        }
+
+        tweets.add(mainTweet);
+
+        for (String replyId : mainTweet.getReplyIds()) {
+            Tweet replyTweet = tweetRepository.findById(replyId).orElse(null);
+            tweets.add(replyTweet);
+        }
+
+        for (Tweet tweet : tweets) {
+            if (tweet.getImage() != null && tweet.getImage().length != 0) {
+                tweet.setImage(ImageUtil.decompressImage(tweet.getImage()));
+            }
+        }
+
+        return tweets;
+    }
+
     public Tweet createTweet(TweetDto tweetDto, User user) throws IOException {
         Tweet tweet = new Tweet();
 

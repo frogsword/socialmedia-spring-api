@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @RestController
@@ -120,6 +121,13 @@ public class TweetController {
     public ResponseEntity<List<Tweet>> getAllTweets(@PathVariable String userId) {
         List<Tweet> tweets = tweetService.getUserTweets(userId);
         return ResponseEntity.ok(tweets);
+    }
+
+    //gets tweet from path as well as all replies and parents to display entire tweet thread
+    @GetMapping("/{tweetId}")
+    public ResponseEntity<List<Tweet>> getTweetThread(@PathVariable String tweetId) {
+        List<Tweet> thread = tweetService.getTweetThread(tweetId);
+        return ResponseEntity.ok(thread);
     }
 
     //client will take returned tweetId and modify isDeleted field
