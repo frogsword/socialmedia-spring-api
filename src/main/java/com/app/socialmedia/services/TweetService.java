@@ -26,7 +26,7 @@ public class TweetService {
         List<Tweet> tweets = new ArrayList<>(tweetsTemp);
 
         for (Tweet tweet : tweets) {
-            if (tweet.getImage().length != 0) {
+            if (tweet.getImage() != null && tweet.getImage().length != 0) {
                 tweet.setImage(ImageUtil.decompressImage(tweet.getImage()));
             }
         }
@@ -37,11 +37,13 @@ public class TweetService {
     public Tweet createTweet(TweetDto tweetDto, User user) throws IOException {
         Tweet tweet = new Tweet();
 
-        byte[] imageRaw = tweetDto.getImage().getBytes();
-        byte[] image = ImageUtil.compressImage(imageRaw);
+        if (tweetDto.getImage() != null) {
+            byte[] imageRaw = tweetDto.getImage().getBytes();
+            byte[] image = ImageUtil.compressImage(imageRaw);
+            tweet.setImage(image);
+        }
 
         tweet.setBody(tweetDto.getBody());
-        tweet.setImage(image);
 
         tweet.setUserName(user.getName());
         tweet.setUserId(user.getId());
@@ -53,6 +55,7 @@ public class TweetService {
         tweet.setReplyCount(0);
         tweet.setDeleted(false);
         tweet.setParentIds(new ArrayList<>());
+        tweet.setReplyIds(new ArrayList<>());
 
         return tweetRepository.save(tweet);
     }
@@ -65,16 +68,22 @@ public class TweetService {
         }
         else {
             List<String> parentsParentIds = parentTweet.getParentIds();
+            List<String> parentsReplyIds = parentTweet.getReplyIds();
+
             List<String> parentIds = new ArrayList<>(parentsParentIds);
+            List<String> replyIds = new ArrayList<>(parentsReplyIds);
+
             parentIds.add(parentId);
 
             Tweet tweet = new Tweet();
 
-            byte[] imageRaw = tweetDto.getImage().getBytes();
-            byte[] image = ImageUtil.compressImage(imageRaw);
+            if (tweetDto.getImage() != null) {
+                byte[] imageRaw = tweetDto.getImage().getBytes();
+                byte[] image = ImageUtil.compressImage(imageRaw);
+                tweet.setImage(image);
+            }
 
             tweet.setBody(tweetDto.getBody());
-            tweet.setImage(image);
 
             tweet.setUserName(user.getName());
             tweet.setUserId(user.getId());
@@ -86,11 +95,16 @@ public class TweetService {
             tweet.setReplyCount(0);
             tweet.setDeleted(false);
             tweet.setParentIds(parentIds);
+            tweet.setReplyIds(new ArrayList<>());
+
+            Tweet newReply = tweetRepository.save(tweet);
 
             parentTweet.setReplyCount(parentTweet.getReplyCount() + 1);
+            replyIds.add(newReply.getId());
+            parentTweet.setReplyIds(replyIds);
             tweetRepository.save(parentTweet);
 
-            return tweetRepository.save(tweet);
+            return newReply;
         }
     }
 

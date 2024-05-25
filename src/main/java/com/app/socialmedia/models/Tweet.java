@@ -20,5 +20,6 @@ public class Tweet {
     private Integer replyCount;
     private boolean isDeleted;
     private List<String> parentIds;
+    private List<String> replyIds;
     private Date createdAt;
 }

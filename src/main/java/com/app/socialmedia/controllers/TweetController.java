@@ -30,13 +30,18 @@ public class TweetController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
-        if (!Objects.equals(image.getContentType(), "image/jpeg")) {
+        if (!image.isEmpty() && !Objects.equals(image.getContentType(), "image/jpeg")) {
             return ResponseEntity.badRequest().build();
         }
 
         TweetDto tweetDto = new TweetDto();
         tweetDto.setBody(body);
-        tweetDto.setImage(image);
+        if (image.isEmpty()) {
+            tweetDto.setImage(null);
+        }
+        else {
+            tweetDto.setImage(image);
+        }
 
         Tweet createdTweet = tweetService.createTweet(tweetDto, currentUser);
 
@@ -48,13 +53,18 @@ public class TweetController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
-        if (!Objects.equals(image.getContentType(), "image/jpeg")) {
+        if (!image.isEmpty() && !Objects.equals(image.getContentType(), "image/jpeg")) {
             return ResponseEntity.badRequest().build();
         }
 
         TweetDto tweetDto = new TweetDto();
         tweetDto.setBody(body);
-        tweetDto.setImage(image);
+        if (image.isEmpty()) {
+            tweetDto.setImage(null);
+        }
+        else {
+            tweetDto.setImage(image);
+        }
 
         Tweet reply = tweetService.replyToTweet(tweetDto, currentUser, parentId);
 
