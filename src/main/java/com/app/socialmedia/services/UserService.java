@@ -2,7 +2,6 @@ package com.app.socialmedia.services;
 
 import com.app.socialmedia.models.User;
 import com.app.socialmedia.repositories.UserRepository;
-import com.app.socialmedia.utils.ImageUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

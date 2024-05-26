@@ -4,7 +4,6 @@ import com.app.socialmedia.dtos.tweet.TweetDto;
 import com.app.socialmedia.models.Tweet;
 import com.app.socialmedia.models.User;
 import com.app.socialmedia.repositories.TweetRepository;
-import com.app.socialmedia.utils.ImageUtil;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -24,12 +23,6 @@ public class TweetService {
     public List<Tweet> getUserTweets(String userId) {
         List<Tweet> tweetsTemp = tweetRepository.findByUserId(userId);
         List<Tweet> tweets = new ArrayList<>(tweetsTemp);
-
-        for (Tweet tweet : tweets) {
-            if (tweet.getImage() != null && tweet.getImage().length != 0) {
-                tweet.setImage(ImageUtil.decompressImage(tweet.getImage()));
-            }
-        }
 
         return tweets;
     }
@@ -55,12 +48,6 @@ public class TweetService {
             tweets.add(replyTweet);
         }
 
-        for (Tweet tweet : tweets) {
-            if (tweet.getImage() != null && tweet.getImage().length != 0) {
-                tweet.setImage(ImageUtil.decompressImage(tweet.getImage()));
-            }
-        }
-
         return tweets;
     }
 
@@ -68,8 +55,7 @@ public class TweetService {
         Tweet tweet = new Tweet();
 
         if (tweetDto.getImage() != null) {
-            byte[] imageRaw = tweetDto.getImage().getBytes();
-            byte[] image = ImageUtil.compressImage(imageRaw);
+            byte[] image = tweetDto.getImage().getBytes();
             tweet.setImage(image);
         }
 
@@ -108,8 +94,7 @@ public class TweetService {
             Tweet tweet = new Tweet();
 
             if (tweetDto.getImage() != null) {
-                byte[] imageRaw = tweetDto.getImage().getBytes();
-                byte[] image = ImageUtil.compressImage(imageRaw);
+                byte[] image = tweetDto.getImage().getBytes();
                 tweet.setImage(image);
             }
 
