@@ -22,6 +22,10 @@ public class UserService {
         return new ArrayList<>(userRepository.findAll());
     }
 
+    public Optional<User> findUser(String name) {
+        return userRepository.findByName(name);
+    }
+
     public User updatePfp(String userId, MultipartFile image) throws IOException {
         User user = userRepository.findById(userId).orElse(null);
 

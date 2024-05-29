@@ -26,6 +26,12 @@ public class TweetController {
         this.userService = userService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Tweet>> getAllTweets() {
+        List<Tweet> tweets = tweetService.getTweets();
+        return ResponseEntity.ok(tweets);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<Tweet> createTweet(@RequestParam MultipartFile image, @RequestParam String body) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -117,9 +123,9 @@ public class TweetController {
         }
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Tweet>> getAllTweets(@PathVariable String userId) {
-        List<Tweet> tweets = tweetService.getUserTweets(userId);
+    @GetMapping("/user/{userName}")
+    public ResponseEntity<List<Tweet>> getAllTweets(@PathVariable String userName) {
+        List<Tweet> tweets = tweetService.getUserTweets(userName);
         return ResponseEntity.ok(tweets);
     }
 

@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -29,6 +30,14 @@ public class UserController {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
         this.userService = userService;
+    }
+
+    @GetMapping("auth/authenticate")
+    public ResponseEntity<User> authenticate() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        return ResponseEntity.ok(currentUser);
     }
 
     @PostMapping("auth/signup")
@@ -105,11 +114,17 @@ public class UserController {
         return ResponseEntity.ok(successful);
     }
 
-
     @GetMapping("users")
     public ResponseEntity<List<User>> allUsers() {
         List<User> users = userService.allUsers();
 
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("users/{name}")
+    public ResponseEntity<Optional<User>> getUser(@PathVariable String name) {
+        Optional<User> user = userService.findUser(name);
+
+        return ResponseEntity.ok(user);
     }
 }

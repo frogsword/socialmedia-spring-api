@@ -20,8 +20,12 @@ public class TweetService {
         this.tweetRepository = tweetRepository;
     }
 
-    public List<Tweet> getUserTweets(String userId) {
-        List<Tweet> tweetsTemp = tweetRepository.findByUserId(userId);
+    public List<Tweet> getTweets() {
+        return tweetRepository.findAll();
+    }
+
+    public List<Tweet> getUserTweets(String userName) {
+        List<Tweet> tweetsTemp = tweetRepository.findByUserName(userName);
         List<Tweet> tweets = new ArrayList<>(tweetsTemp);
 
         return tweets;
