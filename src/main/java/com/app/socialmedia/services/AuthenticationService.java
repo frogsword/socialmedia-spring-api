@@ -9,9 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class AuthenticationService {
@@ -32,6 +30,33 @@ public class AuthenticationService {
     }
 
     public User signup(RegisterDto input) {
+
+        if (!Objects.equals(input.getPassword(), input.getConfirmPassword())) {
+            return null;
+        }
+
+        String changeableName = input.getName();
+        
+        //make sure 'name' is unique
+        //add numbers to end of name until name is unique
+        boolean isUnique = false;
+        Random rand = new Random();
+        while (!isUnique) {
+            Optional<User> user = userRepository.findByName(input.getName());
+            if (user.isEmpty()) {
+                isUnique = true;
+            }
+            else {
+                input.setName(input.getName() + rand.nextInt(100));
+            }
+        }
+
+        //check for unique email
+        Optional<User> emailDuplicate = userRepository.findByEmail(input.getEmail());
+        if (emailDuplicate.isPresent()) {
+            return null;
+        }
+
         List<String> arr = new ArrayList<>();
         Date now = new Date();
 
@@ -40,6 +65,10 @@ public class AuthenticationService {
                 .setEmail(input.getEmail())
                 .setPassword(passwordEncoder.encode(input.getPassword()));
 
+        user.setBio("");
+        user.setChangeableName(changeableName);
+        user.setCountry("");
+        user.setProfilePicture(new byte[0]);
         user.setLikedTweets(arr);
         user.setFollowing(arr);
         user.setFollowers(arr);

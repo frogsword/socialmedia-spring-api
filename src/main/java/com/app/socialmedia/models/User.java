@@ -15,6 +15,9 @@ public class User implements UserDetails {
     @Id
     private String id;
     private String name;
+    private String changeableName;
+    private String bio;
+    private String country;
     private String email;
     private String password;
     private byte[] profilePicture;
