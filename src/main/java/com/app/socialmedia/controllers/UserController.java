@@ -66,40 +66,41 @@ public class UserController {
         return ResponseEntity.ok(jwt);
     }
 
-    @GetMapping("users/me")
-    public ResponseEntity<User> authenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        User currentUser = (User) authentication.getPrincipal();
-
-        return ResponseEntity.ok(currentUser);
-    }
-
-    @PatchMapping("users/username/update")
-    public ResponseEntity<User> updateUsername(@RequestBody UpdateUsernameDto updateUsernameDto) {
+    @PutMapping("/users/profile/update")
+    public ResponseEntity<User> updateProfile(
+            @RequestParam MultipartFile image,
+            @RequestParam String changeableName,
+            @RequestParam String bio,
+            @RequestParam String country
+    ) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
-        User user = userService.updateUsername(currentUser.getId(), updateUsernameDto.getName());
-        return ResponseEntity.ok(user);
-    }
-
-    @PatchMapping("users/pfp/update")
-    public ResponseEntity<User> updatePfp(@RequestParam MultipartFile image) throws IOException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
-
-        if (!Objects.equals(image.getContentType(), "image/jpeg") || image.getSize() > 100000) {
-            return ResponseEntity.badRequest().build();
+        if (currentUser == null) {
+            return ResponseEntity.badRequest().body(null);
         }
-        User updatedUser = userService.updatePfp(currentUser.getId(), image);
 
-        if (updatedUser == null) {
-            return ResponseEntity.badRequest().build();
+        if (!image.isEmpty()) {
+            if (!Objects.equals(image.getContentType(), "image/jpeg") || image.getSize() > 100000) {
+
+                return ResponseEntity.badRequest().build();
+            }
+            else {
+                userService.updatePfp(currentUser.getId(), image);
+            }
         }
-        else {
-            return ResponseEntity.ok(updatedUser);
+
+        if (!Objects.equals(changeableName, currentUser.getChangeableName())) {
+            userService.updateUsername(currentUser, changeableName);
         }
+        if (!Objects.equals(bio, currentUser.getBio())) {
+            userService.updateBio(currentUser, bio);
+        }
+        if (!Objects.equals(country, currentUser.getCountry())) {
+            userService.updateCountry(currentUser, country);
+        }
+
+        return ResponseEntity.ok(userService.findUserById(currentUser.getId()));
     }
 
     @PutMapping("users/{followingId}/follow")

@@ -26,17 +26,8 @@ public class UserService {
         return userRepository.findByName(name);
     }
 
-    public User updatePfp(String userId, MultipartFile image) throws IOException {
-        User user = userRepository.findById(userId).orElse(null);
-
-        if (user != null) {
-            byte[] imageBytes = image.getBytes();
-
-            user.setProfilePicture(imageBytes);
-
-            return userRepository.save(user);
-        }
-        return null;
+    public User findUserById(String id) {
+        return userRepository.findById(id).orElse(null);
     }
 
     public boolean updateLikedTweets(String tweetId, String userId, boolean toRemove) {
@@ -93,14 +84,30 @@ public class UserService {
         return false;
     }
 
-    public User updateUsername(String userId, String newUsername) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            user.setName(newUsername);
+    public void updatePfp(String userId, MultipartFile image) throws IOException {
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user != null) {
+            byte[] imageBytes = image.getBytes();
+
+            user.setProfilePicture(imageBytes);
+
             userRepository.save(user);
-            return user;
         }
-        return null;
+    }
+
+    public void updateUsername(User user, String newUsername) {
+        user.setChangeableName(newUsername);
+        userRepository.save(user);
+    }
+
+    public void updateBio(User user, String bio) {
+        user.setBio(bio);
+        userRepository.save(user);
+    }
+
+    public void updateCountry(User user, String country) {
+        user.setCountry(country);
+        userRepository.save(user);
     }
 }

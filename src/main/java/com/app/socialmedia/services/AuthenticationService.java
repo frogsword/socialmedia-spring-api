@@ -65,9 +65,9 @@ public class AuthenticationService {
                 .setEmail(input.getEmail())
                 .setPassword(passwordEncoder.encode(input.getPassword()));
 
-        user.setBio("");
+        user.setBio("No Bio :(");
         user.setChangeableName(changeableName);
-        user.setCountry("");
+        user.setCountry("N/A");
         user.setProfilePicture(new byte[0]);
         user.setLikedTweets(arr);
         user.setFollowing(arr);
