@@ -148,4 +148,21 @@ public class TweetService {
         }
         return false;
     }
+    
+    public boolean updateTweetPfps(User user) {
+        byte[] newPfp = user.getProfilePicture();
+        
+        List<Tweet> userTweets = tweetRepository.findByUserId(user.getId());
+        
+        if (userTweets.isEmpty()) {
+            return false;
+        }
+        
+        for (Tweet tweet : userTweets) {
+            tweet.setUserPfp(newPfp);
+            tweetRepository.save(tweet);
+        }
+        
+        return true;
+    }
 }

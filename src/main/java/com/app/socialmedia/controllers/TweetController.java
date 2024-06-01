@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @RestController
@@ -146,5 +145,17 @@ public class TweetController {
         else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    //gets called after user updates pfp
+    //changes pfp on all user tweets to new pfp
+    @PatchMapping("pfp/update")
+    public ResponseEntity<Boolean> updateTweet() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        Boolean successful = tweetService.updateTweetPfps(currentUser);
+
+        return ResponseEntity.ok(successful);
     }
 }
