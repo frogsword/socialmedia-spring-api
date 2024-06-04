@@ -21,11 +21,11 @@ public class TweetService {
     }
 
     public List<Tweet> getTweets() {
-        return tweetRepository.findAll();
+        return tweetRepository.findAll().reversed();
     }
 
     public List<Tweet> getUserTweets(String userName) {
-        List<Tweet> tweetsTemp = tweetRepository.findByUserName(userName);
+        List<Tweet> tweetsTemp = tweetRepository.findByUserName(userName).reversed();
         List<Tweet> tweets = new ArrayList<>(tweetsTemp);
 
         return tweets;
@@ -62,10 +62,14 @@ public class TweetService {
             byte[] image = tweetDto.getImage().getBytes();
             tweet.setImage(image);
         }
+        else {
+            tweet.setImage(null);
+        }
 
         tweet.setBody(tweetDto.getBody());
 
         tweet.setUserName(user.getName());
+        tweet.setUserChangeableName(user.getChangeableName());
         tweet.setUserId(user.getId());
         tweet.setUserPfp(user.getProfilePicture());
 
@@ -105,6 +109,7 @@ public class TweetService {
             tweet.setBody(tweetDto.getBody());
 
             tweet.setUserName(user.getName());
+            tweet.setUserChangeableName(user.getChangeableName());
             tweet.setUserId(user.getId());
             tweet.setUserPfp(user.getProfilePicture());
 

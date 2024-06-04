@@ -15,6 +15,7 @@ public class Tweet {
     private byte[] image;
     private String userId;
     private String userName;
+    private String userChangeableName;
     private byte[] userPfp;
     private Integer likeCount;
     private Integer replyCount;

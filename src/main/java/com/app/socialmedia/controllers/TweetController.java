@@ -31,7 +31,7 @@ public class TweetController {
         return ResponseEntity.ok(tweets);
     }
 
-    @PostMapping("/create")
+    @PostMapping("/create/withimage")
     public ResponseEntity<Tweet> createTweet(@RequestParam MultipartFile image, @RequestParam String body) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -54,7 +54,7 @@ public class TweetController {
         return ResponseEntity.ok(createdTweet);
     }
 
-    @PostMapping("/{parentId}/reply")
+    @PostMapping("/{parentId}/reply/withimage")
     public ResponseEntity<Tweet> replyToTweet(@PathVariable String parentId, @RequestParam MultipartFile image, @RequestParam String body) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -71,6 +71,35 @@ public class TweetController {
         else {
             tweetDto.setImage(image);
         }
+
+        Tweet reply = tweetService.replyToTweet(tweetDto, currentUser, parentId);
+
+        return ResponseEntity.ok(reply);
+    }
+
+    //identical post endpoints for requests without images????
+    @PostMapping("/create/noimage")
+    public ResponseEntity<Tweet> createTweetNoImage(@RequestParam String body) throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        TweetDto tweetDto = new TweetDto();
+        tweetDto.setBody(body);
+        tweetDto.setImage(null);
+
+        Tweet createdTweet = tweetService.createTweet(tweetDto, currentUser);
+
+        return ResponseEntity.ok(createdTweet);
+    }
+
+    @PostMapping("/{parentId}/reply/noimage")
+    public ResponseEntity<Tweet> replyToTweetNoImage(@PathVariable String parentId, @RequestParam String body) throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        TweetDto tweetDto = new TweetDto();
+        tweetDto.setBody(body);
+        tweetDto.setImage(null);
 
         Tweet reply = tweetService.replyToTweet(tweetDto, currentUser, parentId);
 
