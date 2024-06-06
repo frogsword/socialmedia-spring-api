@@ -1,5 +1,6 @@
 package com.app.socialmedia.services;
 
+import com.app.socialmedia.dtos.tweet.ThreadTweets;
 import com.app.socialmedia.dtos.tweet.TweetDto;
 import com.app.socialmedia.models.Tweet;
 import com.app.socialmedia.models.User;
@@ -21,7 +22,16 @@ public class TweetService {
     }
 
     public List<Tweet> getTweets() {
-        return tweetRepository.findAll().reversed();
+        List<Tweet> allTweets = tweetRepository.findAll().reversed();
+        List<Tweet> allParents = new ArrayList<>();
+
+        for (Tweet tweet : allTweets) {
+            if (tweet.getParentIds().isEmpty()) {
+                allParents.add(tweet);
+            }
+        }
+
+        return allParents;
     }
 
     public List<Tweet> getUserTweets(String userName) {
@@ -31,28 +41,31 @@ public class TweetService {
         return tweets;
     }
 
-    public List<Tweet> getTweetThread(String tweetId) {
+    public ThreadTweets getTweetThread(String tweetId) {
         Tweet mainTweet = tweetRepository.findById(tweetId).orElse(null);
 
         if (mainTweet == null) {
             return null;
         }
 
-        List<Tweet> tweets = new ArrayList<>();
-
+        List<Tweet> parents = new ArrayList<>();
         for (String parentId : mainTweet.getParentIds()) {
             Tweet parentTweet = tweetRepository.findById(parentId).orElse(null);
-            tweets.add(parentTweet);
+            parents.add(parentTweet);
         }
 
-        tweets.add(mainTweet);
-
+        List<Tweet> children = new ArrayList<>();
         for (String replyId : mainTweet.getReplyIds()) {
             Tweet replyTweet = tweetRepository.findById(replyId).orElse(null);
-            tweets.add(replyTweet);
+            children.add(replyTweet);
         }
 
-        return tweets;
+        ThreadTweets threadTweets = new ThreadTweets();
+        threadTweets.setParents(parents);
+        threadTweets.setMainTweet(mainTweet);
+        threadTweets.setChildren(children);
+
+        return threadTweets;
     }
 
     public Tweet createTweet(TweetDto tweetDto, User user) throws IOException {
@@ -143,11 +156,13 @@ public class TweetService {
         return false;
     }
 
-    public boolean toggleSoftDelete(String tweetId) {
+    public boolean deleteTweet(String tweetId) {
         Optional<Tweet> tweetOptional = tweetRepository.findById(tweetId);
         if (tweetOptional.isPresent()) {
             Tweet tweet = tweetOptional.get();
-            tweet.setDeleted(!tweet.isDeleted());
+            tweet.setDeleted(true);
+            tweet.setImage(null);
+            tweet.setUserPfp(null);
             tweetRepository.save(tweet);
             return true;
         }

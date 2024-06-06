@@ -1,5 +1,6 @@
 package com.app.socialmedia.controllers;
 
+import com.app.socialmedia.dtos.tweet.ThreadTweets;
 import com.app.socialmedia.dtos.tweet.TweetDto;
 import com.app.socialmedia.models.Tweet;
 import com.app.socialmedia.models.User;
@@ -80,6 +81,10 @@ public class TweetController {
     //identical post endpoints for requests without images????
     @PostMapping("/create/noimage")
     public ResponseEntity<Tweet> createTweetNoImage(@RequestParam String body) throws IOException {
+        if (body.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
@@ -94,6 +99,10 @@ public class TweetController {
 
     @PostMapping("/{parentId}/reply/noimage")
     public ResponseEntity<Tweet> replyToTweetNoImage(@PathVariable String parentId, @RequestParam String body) throws IOException {
+        if (body.isEmpty() || parentId.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
@@ -159,15 +168,15 @@ public class TweetController {
 
     //gets tweet from path as well as all replies and parents to display entire tweet thread
     @GetMapping("/{tweetId}")
-    public ResponseEntity<List<Tweet>> getTweetThread(@PathVariable String tweetId) {
-        List<Tweet> thread = tweetService.getTweetThread(tweetId);
+    public ResponseEntity<ThreadTweets> getTweetThread(@PathVariable String tweetId) {
+        ThreadTweets thread = tweetService.getTweetThread(tweetId);
         return ResponseEntity.ok(thread);
     }
 
     //client will take returned tweetId and modify isDeleted field
     @DeleteMapping("/{tweetId}/delete")
     public ResponseEntity<String> deleteTweet(@PathVariable String tweetId) {
-        boolean successful = tweetService.toggleSoftDelete(tweetId);
+        boolean successful = tweetService.deleteTweet(tweetId);
         if (successful) {
             return ResponseEntity.ok(tweetId);
         }
